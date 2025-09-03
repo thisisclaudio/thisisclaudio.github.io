@@ -1,113 +1,249 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bonaglia.ch</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonaglia</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1a0933, #0d0626);
+            font-family: 'Roboto', sans-serif;
+            color: #fff;
+            height: 100vh;
+            perspective: 1200px;
+            cursor: crosshair;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .logo {
+            font-size: 10rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.3rem;
+            background: linear-gradient(45deg, #ff00cc, #00ffcc, #ffcc00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulseGlow 1.5s ease-in-out infinite alternate, morph3d 12s linear infinite;
+            transform-style: preserve-3d;
+            user-select: none;
+        }
+
+        @keyframes pulseGlow {
+            from {
+                text-shadow: 0 0 15px #ff00cc, 0 0 30px #00ffcc, 0 0 50px #ffcc00;
+                transform: scale(1);
+            }
+            to {
+                text-shadow: 0 0 30px #ffcc00, 0 0 50px #00ffcc, 0 0 70px #ff00cc;
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes morph3d {
+            0% {
+                transform: rotateY(0deg) rotateX(0deg) translateZ(0);
+            }
+            100% {
+                transform: rotateY(360deg) rotateX(360deg) translateZ(50px);
+            }
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        canvas#particleCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            mix-blend-mode: screen;
+        }
+
+        .interactive-hint {
+            position: absolute;
+            bottom: 30px;
+            font-size: 1.3rem;
+            opacity: 0.8;
+            animation: float 2s ease-in-out infinite;
+            background: linear-gradient(45deg, #ff00cc, #00ffcc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .orb {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255, 0, 204, 0.8), transparent);
+            border-radius: 50%;
+            animation: orbit 5s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes orbit {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(100px, 100px) rotate(360deg); }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans overflow-hidden">
-  <!-- Hero Section -->
-  <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white relative">
-    <div class="container mx-auto px-4 text-center z-10">
-      <h1 class="text-5xl md:text-6xl font-bold mb-4 animate-slide-in">Bonaglia.ch</h1>
-      <p class="text-xl md:text-2xl mb-8 max-w-xl mx-auto animate-fade-in">
-        Willkommen auf unserer Domain. Teste deine Reflexe mit unserem Spiel!
-      </p>
-      <!-- Game Area -->
-      <div class="bg-white text-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-auto">
-        <h3 class="text-xl font-semibold mb-4">Fange den Punkt!</h3>
-        <div id="game-area" class="relative w-full h-64 bg-gray-100 rounded overflow-hidden">
-          <div id="dot" class="absolute w-6 h-6 bg-red-500 rounded-full cursor-pointer"></div>
+<body>
+    <div class="container">
+        <div class="logo">Bonaglia</div>
+        <div class="particles">
+            <canvas id="particleCanvas"></canvas>
         </div>
-        <p id="score" class="mt-4 text-lg">Punkte: 0</p>
-        <button id="reset-game" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Neustart</button>
-      </div>
+        <div class="interactive-hint">Move & Click to Unleash Chaos</div>
     </div>
-    <!-- Background Animation -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
-      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
-      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
-      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
-    </div>
-  </section>
 
-  <!-- Footer -->
-  <footer class="bg-gray-800 text-white py-4">
-    <div class="container mx-auto px-4 text-center">
-      <p>&copy; 2025 Bonaglia.ch</p>
-    </div>
-  </footer>
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-  <style>
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-50px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    @keyframes moveParticle {
-      0% { transform: translateY(100vh) scale(0.5); opacity: 0.2; }
-      100% { transform: translateY(-100vh) scale(1); opacity: 0.5; }
-    }
-    .animate-slide-in {
-      animation: slideIn 1s ease-out;
-    }
-    .animate-fade-in {
-      animation: fadeIn 1.5s ease-out;
-    }
-    .particle {
-      width: 10px;
-      height: 10px;
-      animation: moveParticle 5s linear infinite;
-    }
-    .particle:nth-child(1) { left: 20%; animation-duration: 6s; }
-    .particle:nth-child(2) { left: 40%; animation-duration: 4s; animation-delay: 1s; }
-    .particle:nth-child(3) { left: 60%; animation-duration: 5s; animation-delay: 2s; }
-    .particle:nth-child(4) { left: 80%; animation-duration: 7s; animation-delay: 0.5s; }
-  </style>
+        let particles = [];
+        let orbs = [];
+        const particleCount = 300;
+        const orbCount = 10;
 
-  <script>
-    const gameArea = document.getElementById('game-area');
-    const dot = document.getElementById('dot');
-    const scoreDisplay = document.getElementById('score');
-    const resetButton = document.getElementById('reset-game');
-    let score = 0;
-    let isGameRunning = true;
+        class Particle {
+            constructor(x, y, isExplosion = false) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * (isExplosion ? 10 : 5) + 2;
+                this.speedX = (Math.random() * 6 - 3) * (isExplosion ? 2 : 1);
+                this.speedY = (Math.random() * 6 - 3) * (isExplosion ? 2 : 1);
+                this.color = `hsl(${Math.random() * 360}, 100%, ${isExplosion ? 70 : 50}%)`;
+                this.life = isExplosion ? 60 : 100;
+                this.wave = Math.random() * Math.PI * 2;
+            }
 
-    function moveDot() {
-      if (!isGameRunning) return;
-      const maxX = gameArea.clientWidth - dot.clientWidth;
-      const maxY = gameArea.clientHeight - dot.clientHeight;
-      const newX = Math.random() * maxX;
-      const newY = Math.random() * maxY;
-      dot.style.left = `${newX}px`;
-      dot.style.top = `${newY}px`;
-      dot.style.transition = 'all 0.3s ease';
-    }
+            update() {
+                this.x += this.speedX + Math.sin(this.wave) * 0.5;
+                this.y += this.speedY + Math.cos(this.wave) * 0.5;
+                this.wave += 0.1;
+                this.life -= 1;
+                if (this.size > 0.2) this.size -= isExplosion ? 0.2 : 0.1;
+            }
 
-    dot.addEventListener('click', () => {
-      if (isGameRunning) {
-        score++;
-        scoreDisplay.textContent = `Punkte: ${score}`;
-        dot.classList.add('scale-150');
-        setTimeout(() => dot.classList.remove('scale-150'), 200);
-        moveDot();
-      }
-    });
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
 
-    resetButton.addEventListener('click', () => {
-      score = 0;
-      scoreDisplay.textContent = `Punkte: ${score}`;
-      isGameRunning = true;
-      moveDot();
-    });
+        class Orb {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.angle = Math.random() * Math.PI * 2;
+                this.radius = Math.random() * 100 + 50;
+                this.speed = Math.random() * 0.02 + 0.01;
+                this.element = document.createElement('div');
+                this.element.className = 'orb';
+                document.body.appendChild(this.element);
+            }
 
-    moveDot();
-    setInterval(moveDot, 1500); // Punkt bewegt sich alle 1,5 Sekunden
-  </script>
+            update() {
+                this.angle += this.speed;
+                this.x = canvas.width / 2 + Math.cos(this.angle) * this.radius;
+                this.y = canvas.height / 2 + Math.sin(this.angle) * this.radius;
+                this.element.style.left = `${this.x}px`;
+                this.element.style.top = `${this.y}px`;
+            }
+        }
+
+        function createParticles(x, y, isExplosion = false) {
+            const count = isExplosion ? particleCount : Math.floor(particleCount / 5);
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, isExplosion));
+            }
+        }
+
+        function createOrbs() {
+            for (let i = 0; i < orbCount; i++) {
+                orbs.push(new Orb());
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.draw();
+                if (particle.life <= 0 || particle.size <= 0.2) {
+                    particles.splice(index, 1);
+                }
+            });
+            orbs.forEach(orb => orb.update());
+            requestAnimationFrame(animate);
+        }
+
+        // Continuous particle generation
+        setInterval(() => {
+            createParticles(Math.random() * canvas.width, Math.random() * canvas.height);
+        }, 200);
+
+        // Mouse move interaction
+        canvas.addEventListener('mousemove', (e) => {
+            createParticles(e.clientX, e.clientY);
+        });
+
+        // Click for explosion
+        canvas.addEventListener('click', (e) => {
+            createParticles(e.clientX, e.clientY, true);
+        });
+
+        // Touch support for mobile
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            createParticles(touch.clientX, touch.clientY);
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            createParticles(touch.clientX, touch.clientY, true);
+        });
+
+        createOrbs();
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            orbs.forEach(orb => {
+                orb.x = Math.random() * canvas.width;
+                orb.y = Math.random() * canvas.height;
+            });
+        });
+    </script>
 </body>
 </html>

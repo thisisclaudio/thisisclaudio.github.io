@@ -1,3 +1,113 @@
-<h1>Welcome to My Website</h1>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bonaglia.ch</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans overflow-hidden">
+  <!-- Hero Section -->
+  <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 text-white relative">
+    <div class="container mx-auto px-4 text-center z-10">
+      <h1 class="text-5xl md:text-6xl font-bold mb-4 animate-slide-in">Bonaglia.ch</h1>
+      <p class="text-xl md:text-2xl mb-8 max-w-xl mx-auto animate-fade-in">
+        Willkommen auf unserer Domain. Teste deine Reflexe mit unserem Spiel!
+      </p>
+      <!-- Game Area -->
+      <div class="bg-white text-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-auto">
+        <h3 class="text-xl font-semibold mb-4">Fange den Punkt!</h3>
+        <div id="game-area" class="relative w-full h-64 bg-gray-100 rounded overflow-hidden">
+          <div id="dot" class="absolute w-6 h-6 bg-red-500 rounded-full cursor-pointer"></div>
+        </div>
+        <p id="score" class="mt-4 text-lg">Punkte: 0</p>
+        <button id="reset-game" class="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Neustart</button>
+      </div>
+    </div>
+    <!-- Background Animation -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
+      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
+      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
+      <div class="particle absolute bg-white opacity-20 rounded-full"></div>
+    </div>
+  </section>
 
-<p>This is a sample HTML file.</p>
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-4">
+    <div class="container mx-auto px-4 text-center">
+      <p>&copy; 2025 Bonaglia.ch</p>
+    </div>
+  </footer>
+
+  <style>
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes moveParticle {
+      0% { transform: translateY(100vh) scale(0.5); opacity: 0.2; }
+      100% { transform: translateY(-100vh) scale(1); opacity: 0.5; }
+    }
+    .animate-slide-in {
+      animation: slideIn 1s ease-out;
+    }
+    .animate-fade-in {
+      animation: fadeIn 1.5s ease-out;
+    }
+    .particle {
+      width: 10px;
+      height: 10px;
+      animation: moveParticle 5s linear infinite;
+    }
+    .particle:nth-child(1) { left: 20%; animation-duration: 6s; }
+    .particle:nth-child(2) { left: 40%; animation-duration: 4s; animation-delay: 1s; }
+    .particle:nth-child(3) { left: 60%; animation-duration: 5s; animation-delay: 2s; }
+    .particle:nth-child(4) { left: 80%; animation-duration: 7s; animation-delay: 0.5s; }
+  </style>
+
+  <script>
+    const gameArea = document.getElementById('game-area');
+    const dot = document.getElementById('dot');
+    const scoreDisplay = document.getElementById('score');
+    const resetButton = document.getElementById('reset-game');
+    let score = 0;
+    let isGameRunning = true;
+
+    function moveDot() {
+      if (!isGameRunning) return;
+      const maxX = gameArea.clientWidth - dot.clientWidth;
+      const maxY = gameArea.clientHeight - dot.clientHeight;
+      const newX = Math.random() * maxX;
+      const newY = Math.random() * maxY;
+      dot.style.left = `${newX}px`;
+      dot.style.top = `${newY}px`;
+      dot.style.transition = 'all 0.3s ease';
+    }
+
+    dot.addEventListener('click', () => {
+      if (isGameRunning) {
+        score++;
+        scoreDisplay.textContent = `Punkte: ${score}`;
+        dot.classList.add('scale-150');
+        setTimeout(() => dot.classList.remove('scale-150'), 200);
+        moveDot();
+      }
+    });
+
+    resetButton.addEventListener('click', () => {
+      score = 0;
+      scoreDisplay.textContent = `Punkte: ${score}`;
+      isGameRunning = true;
+      moveDot();
+    });
+
+    moveDot();
+    setInterval(moveDot, 1500); // Punkt bewegt sich alle 1,5 Sekunden
+  </script>
+</body>
+</html>

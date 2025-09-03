@@ -14,7 +14,10 @@
             color: #fff;
             height: 100vh;
             perspective: 1200px;
-            cursor: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
         }
 
         .container {
@@ -61,32 +64,36 @@
             }
         }
 
-        .particles {
+        .background {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"%3E%3Cdefs%3E%3CradialGradient id="grad" cx="50%25" cy="50%25" r="50%25"%3E%3Cstop offset="0%25" stop-color="%23ff00cc" stop-opacity="0.3"/%3E%3Cstop offset="100%25" stop-color="%230d0626" stop-opacity="0"/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx="100" cy="100" r="100" fill="url(%23grad)" opacity="0.5" style="animation: pulse 5s ease-in-out infinite;"/%3E%3C/svg%3E');
+            background-size: cover;
+            animation: backgroundFlow 20s linear infinite;
+            z-index: 1;
         }
 
-        canvas#particleCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            mix-blend-mode: screen;
+        @keyframes backgroundFlow {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 200% 200%;
+            }
         }
 
-        .interactive-hint {
+        .meme-greeting {
             position: absolute;
             bottom: 30px;
-            font-size: 1.3rem;
-            opacity: 0.8;
-            animation: float 2s ease-in-out infinite;
+            font-size: 1.5rem;
+            font-weight: bold;
             background: linear-gradient(45deg, #ff00cc, #00ffcc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            animation: float 2s ease-in-out infinite;
             z-index: 10;
         }
 
@@ -94,253 +101,13 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-
-        .orb {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: radial-gradient(circle, rgba(0, 255, 204, 0.9), transparent);
-            border-radius: 50%;
-            animation: orbit 3s linear infinite;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        @keyframes orbit {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            100% { transform: translate(150px, 150px) rotate(360deg); }
-        }
-
-        .rocket {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            pointer-events: none;
-            z-index: 20;
-            transition: transform 0.1s ease-out;
-        }
-
-        .rocket svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 15px #ff00cc);
-        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="background"></div>
         <div class="logo">Bonaglia</div>
-        <div class="particles">
-            <canvas id="particleCanvas"></canvas>
-        </div>
-        <div class="rocket" id="rocket">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15 9H9L12 2Z" fill="url(#rocketGrad)" />
-                <path d="M12 9L15 15H9L12 9Z" fill="url(#rocketGrad)" />
-                <path d="M10 15L8 18H16L14 15H10Z" fill="url(#rocketGrad)" />
-                <path d="M10 18C10 19.5 12 21 12 21C12 21 14 19.5 14 18H10Z" fill="#ff0066" />
-                <defs>
-                    <linearGradient id="rocketGrad" x1="12" y1="2" x2="12" y2="18" gradientUnits="userSpaceOnUse">
-                        <stop stop-color="#00ffcc" />
-                        <stop offset="1" stop-color="#ff00cc" />
-                    </linearGradient>
-                </defs>
-            </svg>
-        </div>
-        <div class="interactive-hint">Move to Fly, Click to Explode!</div>
+        <div class="meme-greeting">nuke mars 🌌</div>
     </div>
-
-    <script>
-        const canvas = document.getElementById('particleCanvas');
-        const ctx = canvas.getContext('2d');
-        const rocket = document.getElementById('rocket');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let particles = [];
-        let orbs = [];
-        const particleCount = 500;
-        const orbCount = 20;
-
-        class Particle {
-            constructor(x, y, isExplosion = false) {
-                this.x = x;
-                this.y = y;
-                this.size = Math.random() * (isExplosion ? 15 : 7) + 3;
-                this.speedX = (Math.random() * 10 - 5) * (isExplosion ? 3 : 1);
-                this.speedY = (Math.random() * 10 - 5) * (isExplosion ? 3 : 1);
-                this.color = `hsl(${Math.random() * 360}, 100%, ${isExplosion ? 80 : 50}%)`;
-                this.life = isExplosion ? 40 : 70;
-                this.wave = Math.random() * Math.PI * 2;
-                this.isExplosion = isExplosion;
-                this.rotation = Math.random() * Math.PI * 2;
-                this.shape = Math.floor(Math.random() * 3); // 0: circle, 1: triangle, 2: square
-            }
-
-            update() {
-                this.x += this.speedX + Math.sin(this.wave) * 0.8;
-                this.y += this.speedY + Math.cos(this.wave) * 0.8;
-                this.wave += 0.2;
-                this.rotation += 0.07;
-                this.life -= 1;
-                if (this.size > 0.2) this.size -= this.isExplosion ? 0.3 : 0.15;
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                if (this.shape === 0) {
-                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
-                } else if (this.shape === 1) {
-                    ctx.moveTo(0, -this.size);
-                    ctx.lineTo(this.size * Math.cos(2 * Math.PI / 3), this.size * Math.sin(2 * Math.PI / 3));
-                    ctx.lineTo(this.size * Math.cos(4 * Math.PI / 3), this.size * Math.sin(4 * Math.PI / 3));
-                    ctx.closePath();
-                } else {
-                    ctx.rect(-this.size, -this.size, this.size * 2, this.size * 2);
-                }
-                ctx.fill();
-                ctx.restore();
-            }
-        }
-
-        class Orb {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.angle = Math.random() * Math.PI * 2;
-                this.radius = Math.random() * 150 + 80;
-                this.speed = Math.random() * 0.04 + 0.02;
-                this.element = document.createElement('div');
-                this.element.className = 'orb';
-                document.body.appendChild(this.element);
-            }
-
-            update() {
-                this.angle += this.speed;
-                this.x = canvas.width / 2 + Math.cos(this.angle) * this.radius;
-                this.y = canvas.height / 2 + Math.sin(this.angle) * this.radius;
-                this.element.style.left = `${this.x}px`;
-                this.element.style.top = `${this.y}px`;
-            }
-
-            explode() {
-                createParticles(this.x, this.y, true);
-                this.element.remove();
-                orbs = orbs.filter(orb => orb !== this);
-            }
-        }
-
-        function createParticles(x, y, isExplosion = false) {
-            const count = isExplosion ? particleCount : Math.floor(particleCount / 3);
-            for (let i = 0; i < count; i++) {
-                particles.push(new Particle(x, y, isExplosion));
-            }
-        }
-
-        function createOrbs() {
-            for (let i = 0; i < orbCount; i++) {
-                orbs.push(new Orb());
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((particle, index) => {
-                particle.update();
-                particle.draw();
-                if (particle.life <= 0 || particle.size <= 0.2) {
-                    particles.splice(index, 1);
-                }
-            });
-            orbs.forEach(orb => orb.update());
-            requestAnimationFrame(animate);
-        }
-
-        // Rocket movement
-        let rocketX = canvas.width / 2;
-        let rocketY = canvas.height / 2;
-        let rocketAngle = 0;
-
-        function updateRocket(x, y) {
-            const dx = x - rocketX;
-            const dy = y - rocketY;
-            rocketX = x;
-            rocketY = y;
-            rocketAngle = Math.atan2(dy, dx);
-            rocket.style.left = `${x - 25}px`;
-            rocket.style.top = `${y - 25}px`;
-            rocket.style.transform = `rotate(${rocketAngle + Math.PI / 2}rad)`;
-            createParticles(x, y);
-        }
-
-        // Mouse move interaction
-        canvas.addEventListener('mousemove', (e) => {
-            updateRocket(e.clientX, e.clientY);
-        });
-
-        // Click for explosion
-        canvas.addEventListener('click', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            createParticles(x, y, true);
-            orbs.forEach(orb => {
-                const dx = orb.x - x;
-                const dy = orb.y - y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 60) {
-                    orb.explode();
-                }
-            });
-        });
-
-        // Touch support for mobile
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            updateRocket(x, y);
-        });
-
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            const x = touch.clientX - rect.left;
-            const y = touch.clientY - rect.top;
-            createParticles(x, y, true);
-            orbs.forEach(orb => {
-                const dx = orb.x - x;
-                const dy = orb.y - y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 60) {
-                    orb.explode();
-                }
-            });
-        });
-
-        // Continuous particle generation
-        setInterval(() => {
-            createParticles(Math.random() * canvas.width, Math.random() * canvas.height);
-        }, 100);
-
-        createOrbs();
-        animate();
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            orbs.forEach(orb => {
-                orb.x = Math.random() * canvas.width;
-                orb.y = Math.random() * canvas.height;
-            });
-        });
-    </script>
 </body>
 </html>
